@@ -1,0 +1,174 @@
+{
+  "cells": [
+    {
+      "cell_type": "markdown",
+      "metadata": {},
+      "source": [
+        "# 2025-05-05 Activity\n",
+        "### Author: Prof. Gwen Eadie\n",
+        "### Date: 05/05/2025\n",
+        "\n",
+        "## Quick Review: Bayes' Theorem:\n",
+        "\n",
+        "$$P(\\theta|y) = \\frac{P(y|\\theta)P(\\theta)}{P(y)}$$\n",
+        "\n",
+        "We will define:\n",
+        "- $\\theta$ as the percentage of blue candies made at the factory\n",
+        "- $y$ as the number of blue candies observed in our data\n"
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {},
+      "source": [
+        "### 1. Defining the prior distribution\n",
+        "\n",
+        "As discussed, you are going to use the conjugate prior to the binomial distribution --- the beta distribution --- to quantify your prior information on the percentage $\\theta$ of blue candies made at the factory. Recall that the beta distribution has two parameters that define its shape, $\\alpha$ and $\\beta$, and that it has the form:\n",
+        "$$p(\\theta) \\propto \\theta^{\\alpha-1}(1-\\theta)^{\\beta-1}$$\n",
+        "\n",
+        "To get a feel for how the values of the parameters $\\alpha$ and $\\beta$ affect the overall shape of the beta distribution, try out some different values for these hyperparameters below, and see what the beta distribution looks like! \n",
+        "\n",
+        "Suggestions to try:\n",
+        "\n",
+        "- $\\alpha=\\beta=1$\n",
+        "\n",
+        "- $\\alpha=\\beta$\n",
+        "\n",
+        "- $\\alpha<\\beta$\n",
+        "\n",
+        "- $\\alpha>\\beta$\n",
+        "\n",
+        "Play around with the values of $\\alpha$ and $\\beta$ until the prior captures your prior knowledge about the percentage of blue candies made at the factory."
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": null,
+      "metadata": {},
+      "outputs": [],
+      "source": [
+        "# Import necessary libraries\n",
+        "import numpy as np\n",
+        "import matplotlib.pyplot as plt\n",
+        "from scipy.stats import beta\n",
+        "\n",
+        "# Set alpha and beta parameters\n",
+        "a = 1.8\n",
+        "b = 3\n",
+        "\n",
+        "# Plot the beta distribution given a and b\n",
+        "x = np.linspace(0, 1, 100)\n",
+        "y = beta.pdf(x, a, b)\n",
+        "\n",
+        "plt.figure(figsize=(10, 6))\n",
+        "plt.plot(x, y, 'b-', lw=2.5, label=f'alpha={a}, beta={b}')\n",
+        "plt.xlabel(r'$\\theta$', fontsize=14)\n",
+        "plt.ylabel(r'$p(\\theta)$', fontsize=14)\n",
+        "plt.title('Beta Distribution for different parameters', fontsize=16)\n",
+        "plt.ylim(0, 5)\n",
+        "plt.legend(loc='upper right')\n",
+        "plt.grid(True)\n",
+        "plt.show()\n"
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {},
+      "source": [
+        "Think carefully about what this prior distribution captures --- it represents your prior knowledge about the probability of the percentage of blue candies made at the factory. For example, if you choose a uniform distribution on $\\theta$, then that is the same as saying, e.g. _\"I think that the probability that the factory produces between 10-20% blue candies is the same as between 90-100% blue candies.\"_ Make sure the prior distribution reflects your true prior information. \n",
+        "\n",
+        "Once you've settled on values for the hyperparameters, you might want to save them using unique object names."
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": null,
+      "metadata": {},
+      "outputs": [],
+      "source": [
+        "# My hyperprior parameters for alpha and beta\n",
+        "mya = 1.7\n",
+        "myb = 10\n",
+        "\n",
+        "# Plot my prior distribution\n",
+        "y = beta.pdf(x, mya, myb)\n",
+        "\n",
+        "plt.figure(figsize=(10, 6))\n",
+        "plt.plot(x, y, 'b-', lw=2.5, label=f'alpha={mya}, beta={myb}')\n",
+        "plt.xlabel(r'$\\theta$', fontsize=14)\n",
+        "plt.ylabel(r'$p(\\theta)$', fontsize=14)\n",
+        "plt.title('My prior distribution on theta', fontsize=16)\n",
+        "plt.grid(True)\n",
+        "plt.show()\n"
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {},
+      "source": [
+        "The mean and variance of the beta distribution $p(\\theta)$ are given by\n",
+        "$$ E[\\theta] = \\frac{\\alpha}{\\alpha+\\beta}$$\n",
+        "\n",
+        "$$ Var[\\theta] = \\frac{\\alpha\\beta}{(\\alpha+\\beta)^2(\\alpha+\\beta+1)}$$\n",
+        "\n",
+        "Write functions to calculate these quantities, and use them to calculate the mean and variance of your chosen prior distribution."
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": null,
+      "metadata": {},
+      "outputs": [],
+      "source": [
+        "# Function to calculate the expected value (the mean) of the beta distribution\n",
+        "def meanbeta(a, b):\n",
+        "    return a / (a + b)\n",
+        "\n",
+        "# Function to calculate the variance of the beta distribution\n",
+        "def varbeta(a, b):\n",
+        "    return a * b / ((a + b) ** 2 * (a + b + 1))\n",
+        "\n",
+        "# Use the function to calculate the mean and variance of your prior distribution on theta\n",
+        "priormean = meanbeta(mya, myb)\n",
+        "priorvar = varbeta(mya, myb)\n",
+        "print(f'Prior mean: {priormean}, Prior variance: {priorvar}')\n"
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {},
+      "source": [
+        "### 2. Numerator of Bayes' theorem: product of likelihood and prior\n",
+        "\n",
+        "_What's the likelihood of getting a blue candy?_ \n",
+        "\n",
+        "First, define the random variable $X$ such that $X = 1$ if the candy is blue, and $X=0$ if the candy is *not* blue. This is an example of a _Bernoulli random variable_ because it can take on only values of 0 or 1. So we can say:\n",
+        "$$X \\sim Bernoulli(\\theta)$$\n",
+        "where $\\theta$ is the probability of \"success\" (getting a blue candy). \n",
+        "\n",
+        "If we have many candies, then we have a _sum_ of Bernoulli trials, where $Y=\\Sigma_i X_i$ and \n",
+        "\n",
+        "$$ Y \\sim Binom(n, \\theta)$$\n",
+        "where $n$ is the number of trials.\n",
+        "\n",
+        "The binomial distribution is\n",
+        "$$p(y|\\theta) \\propto \\theta^{y}(1-\\theta)^{n-y}.$$ This is our likelihood for $y$ blue candies, given the percentage $\\theta$ produced at the factory.\n",
+        "\n",
+        "#### Simplify the product of the likelihood (binomial distribution) and the prior (beta distribution)\n",
+        "\n",
+        "Put the mathematical formulas for the likelihood and prior into Bayes' theorem below (ignore the normalization constant $p(y)$) and simplify.\n",
+        "$$p(\\theta|y) \\propto p(y|\\theta)p(\\theta)$$ \n",
+        "\n",
+        "_What do you notice about the form of this simplified equation (see solutions below if you are stuck)._"
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {},
+      "source": [
+        "### 3. Look at your data! \n",
+        "Open the candy, and using the first 15 candies (so the total number of trials is $n=15$), count the total number of successes ($y$). Record these data from the candies before eating the evidence ;)"
+      ]
+    },
+    {
+      "cell_type": "code",
