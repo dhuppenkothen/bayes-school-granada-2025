@@ -1,0 +1,280 @@
+---
+title: "2024-02-05 In-Class Activity"
+author: "Prof. Gwen Eadie"
+date: "05/02/2024"
+output: html_document
+---
+
+# Quick Review: Bayes' Theorem:
+
+$$P(\theta|y) = \frac{P(y|\theta)P(\theta)}{P(y)}$$
+
+We will define:
+- $\theta$ as the percentage of blue candies made at the factory
+- $y$ as the number of blue candies observed in our data
+
+
+### 1. Defining the prior distribution
+
+As discussed, you are going to use the conjugate prior to the binomial distribution --- the beta distribution --- to quantify your prior information on the percentage $\theta$ of blue candies made at the factory. Recall that the beta distribution has two parameters that define its shape, $\alpha$ and $\beta$, and that it has the form:
+$$p(\theta) \propto \theta^{\alpha-1}(1-\theta)^{\beta-1}$$
+
+To get a feel for how the values of the parameters $\alpha$ and $\beta$ affect the overall shape of the beta distribution, try out some different values for these hyperparameters below, and see what the beta distribution looks like! 
+
+Note: The `dbeta` function gives the probability density function (pdf) for the beta distribution (you can look at the help file by typing `?dbeta` or go here: https://stat.ethz.ch/R-manual/R-devel/library/stats/html/Beta.html)
+
+Suggestions to try:
+
+- $\alpha=\beta=1$
+
+- $\alpha=\beta$
+
+- $\alpha<\beta$
+
+- $\alpha>\beta$
+
+Play around with the values of $\alpha$ and $\beta$ until the prior captures your prior knowledge about the percentage of blue candies made at the factory.
+
+
+Write code to plot the beta distribution given parameter values
+
+```{r}
+# set alpha and beta parameters
+a = 2
+b = 8
+
+# plot the beta distribution given a and b
+
+# set the margins
+par(mar=c(5,5,2,2))
+
+# plot the prior distribution from students
+curve(dbeta(x, shape1 = a, shape2 = b),
+      col="blue", lwd=2.5, xlab=expression(theta), ylab=expression(p(theta)), main="Beta distribution for different parameters", ylim=c(0,5))
+
+# add a legend showing the alpha and beta values
+legend("top", legend=c(as.expression(bquote(alpha == .(a)~", "~beta == .(b)) )), col="blue" )
+```
+
+
+Think carefully about what this prior distribution captures --- it represents your prior knowledge about the probability of the percentage of blue candies made at the factory. For example, if you choose a uniform distribution on $\theta$, then that is the same as saying, e.g. _"I think that the probability that the factory produces between 10-20% blue candies is the same as between 90-100% blue candies."_ Make sure the prior distribution reflects your true prior information. 
+
+Once you've settled on values for the hyperparameters, you might want to save them using unique object names
+
+
+
+```{r}
+# my hyperprior parameters for alpha and beta
+mya = 2
+myb = 8
+
+# plot my prior distribution
+
+# set margins
+
+# plot the prior distribution from students
+
+```
+
+
+
+The mean and variance of the beta distribution $p(\theta)$ are given by
+$$ E[\theta] = \frac{\alpha}{\alpha+\beta}$$
+
+$$ Var[\theta] = \frac{\alpha\beta}{(\alpha+\beta)^2(\alpha+\beta+1)}$$
+
+Write functions to calculate these quantities, and use them to calculate the mean and variance of your chosen prior distribution.
+
+```{r}
+# function to calculate the expected value (the mean) of the beta distribution
+meanbeta = function(a,b){ 
+
+  a/(a+b)
+  
+}
+
+# function to calculate the variance of the beta distribution
+varbeta = function(a,b){ 
+  
+  a*b/( (a+b)^2 * (a + b + 1) )
+  
+}
+
+# use the function to calculate the mean and variance of your prior distribution on theta
+meanbeta(mya,myb)
+varbeta(mya,myb)
+```
+
+
+
+### 2. Numerator of Bayes' theorem: product of likelihood and prior
+
+_What's the likelihood of getting a blue candy?_ 
+
+First, define the random variable $X$ such that $X = 1$ if the candy is blue, and $X=0$ if the candy is *not* blue. This is an example of a _Bernoulli random variable_ because it can take on only values of 0 or 1. So we can say:
+$$X \sim Bernoulli(\theta)$$
+where $\theta$ is the probability of "success" (getting a blue candy). 
+
+If we have many candies, then we have a _sum_ of Bernoulli trials, where $Y=\Sigma_i X_i$ and 
+
+$$ Y \sim Binom(n, \theta)$$
+where $n$ is the number of trials.
+
+The binomial distribution is
+$$p(y|\theta) \propto \theta^{y}(1-\theta)^{n-y}.$$
+This is our likelihood for $y$ blue candies, given the percentage $\theta$ produced at the factory.
+
+#### Simplify the product of the likelihood (binomial distribution) and the prior (beta distribution)
+
+Put the mathematical formulas for the likelihood and prior into Bayes' theorem below (ignore the normalization constant $p(y)$) and simplify.
+$$p(\theta|y) \propto p(y|\theta)p(\theta)$$ 
+
+_What do you notice about the form of this simplified equation (see solutions below if you are stuck)._
+
+
+
+### 3. Look at your data! 
+Open the candy, and using the first 15 candies (so the total number of trials is $n=15$), count the total number of successes ($y$). Record these data from the candies before eating the evidence ;)
+
+
+```{r}
+# record your data before eating it!
+# total number of trials
+n = 15
+
+########### PLAIN m&m's ##################
+y = 0 # number of blue m&m's
+nred = 4
+norange = 3
+nyellow = 0
+ngreen = 6
+nbrown = 2
+
+```
+
+
+### 4. Calculate and plot the posterior given your data and your prior distribution
+
+We know the posterior distribution is a beta distribution, so you can use the function you wrote above to plot the posterior. But now the "a" and "b" in our function will be passed $y + \alpha$, and $n - y + \beta$ (If this is confusing, then look at the equation of the posterior distribution again, and compare it to the equation for the beta distribution).
+
+Now, calculate the mean and variance, and plot the posterior. 
+
+
+```{r}
+# mean and variance of posterior
+
+```
+
+
+Plot:
+```{r}
+# set margins
+par(mar=c(5,5,2,2))
+
+# plot the posterior distribution
+curve(dbeta(x, shape1 = (y+mya), shape2 = (n-y+myb)), 
+      xlab=expression(theta), ylab=expression(p(theta~"|"~y)), 
+      main = "Posterior distribution for the percentage of blue m&m's at factory")
+
+grid()
+
+# calculate posterior mean
+# postmean =  (This was already done in the cell above)
+
+# add a line to the plot to show the mean of the posterior
+
+# add the prior distribution to the plot, to compare
+curve(dbeta(x, shape1 = mya, shape2 = myb), lwd=2, lty=3, add=TRUE, col="darkgrey")
+
+# add a legend
+legend("topright", legend=c("posterior", 
+        as.expression(bquote("posterior mean"==))))
+```
+### 5. Estimate the posterior predictive distribution 
+
+Next, calculate the posterior predictive distribution given your observed data and the posterior distribution. 
+
+To do so, draw a random value of $\theta$ from the posterior, and then draw a $y$ (number of blue m&m's) from the likelihood (binomial distribution) given that value of $\theta$. Repeat this many times.
+
+```{r}
+nsims=500
+
+# draw a random theta
+thetatemp <- rbeta(n = nsims, shape1 = (y+mya), shape2 = (n-y+myb))
+  
+# draw a random y (number of blues)
+yfuture <- rbinom(n = nsims, size = 15, prob = thetatemp)
+
+# distribution of future data sets (number of blues)
+hist(yfuture, probability = TRUE, breaks = seq(-0.5,15.5, by=1))
+
+```
+
+
+
+### 6. Pool the data from the class
+
+
+First, let's get the distribution of the number of blues from the class.
+
+```{r}
+# class data, number of successes from each bag
+classdata <- c(1,1,1,4,2,1,2,0,1,2,1,1)
+
+# number of bags in the class
+nbags <- length(classdata)
+
+# histogram of bags in the class
+hist(classdata, probability=TRUE, breaks=seq(-0.5,15.5, by=1), col=rgb(0, 0.3, 0.6, 0.5))
+
+hist(yfuture, probability = TRUE, breaks = seq(-0.5,15.5, by=1), add=TRUE, col=rgb(0,0,0,0.5))
+
+```
+
+We will compile our data sets, and see how this changes the posterior distribution. 
+
+
+```{r}
+# class data, number of successes from each bag
+classdata = c(1,1,1,4,2,1,2,0,1,2,1,1, 0)
+nbags = length(classdata)
+
+# total trials for class is number of trials for each student n=16 times number of students
+nclass = n*nbags
+
+# total successes for class
+yclass = sum(classdata)
+
+# print total trials for class and total number of successes for class
+
+# posterior mean and variance for the class
+
+
+# print posterior mean and variance 
+```
+
+
+Plot the posterior distribution for the entire class data set
+
+```{r}
+# set margins
+par(mar=c(5,5,2,2))
+
+# plot the posterior distribution
+curve( dbeta(x, shape1 = (yclass+mya), shape2 = (nclass-yclass+myb)), xlab=expression(theta),
+             ylab=expression(p(theta~"|"~y[class])), lwd=2, ylim=c(0,15)
+       )
+
+# add the prior distribution to the plot, to compare
+
+curve(dbeta(x, shape1 = mya, shape2 = myb), lwd=2, lty=3, add=TRUE, col="darkgrey")
+
+# add a line to the plot to show the mean of the posterior for the class
+abline(v=meanbeta(a = (yclass+mya), b = (nclass-yclass+myb)), col="red", lty=2, lwd=2)
+
+meanbeta(a = (yclass+mya), b = (nclass-yclass+myb))
+
+# add a legend
+```
+
+
