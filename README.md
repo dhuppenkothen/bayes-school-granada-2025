@@ -27,7 +27,7 @@ TBD
 - `tidyverse`
 - `tidybayes`
 
-  For example, running install.packages("brms") will install the brms package on your computer.
+  For example, running `install.packages("brms")` will install the brms package.
 
 **Step 4:** To _use_ the package in R (or R Studio), run the command e.g., `library(brms)`. You need to run the `library` function for a package each time you open up R. But once you have loaded it within a session, you do not need to load it again.
 
