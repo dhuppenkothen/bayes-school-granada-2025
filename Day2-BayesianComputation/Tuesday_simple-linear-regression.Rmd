@@ -1,0 +1,120 @@
+---
+title: "Linear Regression (Frequentist and Bayesian) - 2025-05-06"
+author: "Prof. Gwen Eadie"
+date: "2025-05-06"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+library(knitr)
+knitr::opts_chunk$set(echo = TRUE)
+set.seed(1234)
+```
+
+## Fitting a simple regression line to mock data (frequentist approach)
+
+This exercise follows section 6.2 in Gelman, Hill, and Vehtari (2021).
+
+1.  Simulate 20 fake data points from the model $$y_i = a +bx_i + \epsilon_i$$ where there is one predictor (covariate) that takes on values between 1 and 20, and where the intercept is 0.2 and the slope is 0.3, and $$\epsilon_i \sim N(0, \sigma=0.5)$$
+
+```{r}
+# write code and a function to simulate y values here. 
+n=20
+x = 1:n
+simfunc = function(a, b, sigma, x){ a + b*x + rnorm(n, mean = 0, sd = sigma) }
+
+mya = 0.2
+myb = 0.3
+mysigma = 0.5
+
+y = simfunc(a=mya, b=myb, sigma = mysigma, x=x)
+```
+
+2.  Fit a linear regression model to these fake data. You will need to create a `data.frame` containing both the predictor and the outcome. Use the function `lm` to fit the simple linear regression.
+
+```{r}
+# create data frame with covariate and outcome in columns
+fakedata = data.frame(x, y)
+
+# you should use the lm function and assign the results to a new object
+lmfit = lm(y ~ x, data = fakedata)
+```
+
+3.  Now display the results using `print`. What does print show you? 
+
+```{r}
+print(lmfit)
+```
+4. Display results using `summary`, which gives a little more information (e.g., the standard error of each estimate)
+```{r}
+summary(lmfit)
+
+```
+
+5. Plot the data, regression line, and confidence bands
+```{r}
+# simple plot without confidence bands
+plot(fakedata$x, fakedata$y, pch=19, xlab="x", ylab="y")
+grid()
+abline(lmfit, col="darkgrey")
+
+# can use the visreg package to easily make fit line with confidence bands
+library(visreg)
+visreg(lmfit)
+
+```
+
+
+## Inferring the parameters for a line (Bayesian approach)
+
+
+Using the same mock data, infer the parameters of the intercept and slope.
+```{r}
+# load packages
+library(ggplot2)
+library(tidyverse)
+library(tidybayes)
+library(brms)
+```
+
+1.  We will use the default priors in stan_lm.
+```{r}
+
+#bayesfit <- stan_lm(y ~ x, data = fakedata, prior=NULL)
+# use Bayesian Regression Model (brm) function from brms package
+bayesfit <- brm(y ~ x, data = fakedata)
+
+```
+2.  Look at the chains and summary of the output of the inferred posterior distribution
+```{r}
+# plot the Markov chains and marginal distribution of the draws
+plot(bayesfit)
+
+# get the summary output
+summary(bayesfit)
+```
+
+3.  Plot the inferred relationship using the posterior distribution
+```{r}
+# Create a new data frame that will be used to generate predictions given the (Bayesian) regression prediction of y at a bunch x's
+new_data <- data.frame(x = seq(min(fakedata$x), max(fakedata$x), length.out = 100)) 
+
+# Get fitted values for the new_data object
+fitted_values <- fitted(bayesfit, newdata = new_data) 
+
+# Use the posterior draws and new_data object to calculate credible intervals
+posterior_draws <- posterior_epred(bayesfit, newdata = new_data, draws = 1000)
+    
+# Calculate the credible interval (e.g., 95% CI):
+credible_interval <- apply(posterior_draws, 2, function(x) quantile(x, probs = c(0.025, 0.975))) 
+
+
+# Now plot the line and credible intervals using the ggplot2 package
+ggplot(new_data, aes(x = x)) +
+    geom_ribbon(aes(ymin = credible_interval[1,], ymax = credible_interval[2,]), fill = "lightblue", alpha = 0.5) +
+    geom_line(aes(y = fitted_values[,1]), color = "blue") +
+    geom_point(data = fakedata, aes(y = y)) +
+    labs(title = "Regression Line with Credible Bands", x = "x", y = "y") +
+    theme_bw()
+```
+
