@@ -17,6 +17,8 @@ TBD
 
 **Step 1:** Follow the instructions [here](https://ftp.cixug.es/CRAN/) to download the *R Statistical Software* for your operating system
 
+**Step 1a (if you're on Windows):** Install Rtools [here](https://cran.r-project.org/bin/windows/Rtools/rtools45/rtools.html)
+
 **Step 2 (if you want to learn how to use R):** Follow the instructions [here](https://posit.co/download/rstudio-desktop/) to download R Studio 
 
 **Step 3:** Open up R (either in a console or in R Studio), and install the following packages using the command `install.packages("nameofpackage")`:
