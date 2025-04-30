@@ -17,7 +17,7 @@ TBD
 
 **Step 1:** Follow the instructions [here](https://ftp.cixug.es/CRAN/) to download the *R Statistical Software* for your operating system
 
-**Step 2 (only required if you want to use the R Markdown files):** Follow the instructions [here]([https://posit.co/download/rstudio-desktop/) to download R Studio 
+**Step 2 (only required if you want to use the R Markdown files):** Follow the instructions [here](https://posit.co/download/rstudio-desktop/) to download R Studio 
 
 **Step 3:** Open up R (either in a console or in R Studio), and install the following packages using the command `install.packages("nameofpackage")`:
 
