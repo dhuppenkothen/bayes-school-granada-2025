@@ -8,3 +8,9 @@ This repo contains materials and notebooks for the Bayesian statistics school in
 
 ## Pre-requisites
 TBD
+
+## Required Software Installation
+
+### Python Packages and Environment
+
+### R Statistical Software and packages
