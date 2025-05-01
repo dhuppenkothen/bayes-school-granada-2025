@@ -11,6 +11,9 @@ TBD
 
 ## Required Software Installation
 
+The exercises in this school will be available in both python notebooks (all), and in R markdown (some). Although not required, this is an opportunity to learn some R if you are curious about it. The *R Statistical Software* is the software of choice for applied statisticians, both in industry and academia. It is especially predominant in fields such as biostatistics, biology, and ecology (academia and industry), and in industries like banking, finance, actuarial science, insurance, and healthcare.
+
+Below we have given instructions on what packages and installation requirements are needed for the python notebooks and R markdown documents. 
 ### Python Packages and Environment
 
 ### R Statistical Software and packages
