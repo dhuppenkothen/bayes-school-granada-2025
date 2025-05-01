@@ -1,0 +1,161 @@
+---
+title: "Inspecting Markov Chain Behaviour"
+author: "Prof. Gwen Eadie"
+date: "2025-05-06"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Intended Learning Outcome 
+
+_Understand how to width of the proposal distribution affects the efficiency and sampling of a posterior distribution_
+
+
+In this exercise, we will perform Bayesian inference for a linear regression and play around with the width of the proposal distribution to see how this affects the resulting Markov chain. 
+
+For learning purposes, we won't use an out-of-the-box MCMC package to do the sampling. We will write our own, very simplistic, Metroplis algorithm (everyone should do this at least once, it's a good learning experience!). We will assume uniform priors on the parameters, meaning that these are constants and can be ignored/left out in the code. (However, in practice, you should always think carefully about the priors and definitely include them!!).
+
+### Step 1
+
+Simulate some mock data ($n=100$) that follows the line $$y = \beta_0 + \beta_1 x$$ and set the parameters to some true values of your choice. When simulating the data, make sure to include some Gaussian, random noise. I recommend setting $\sigma=1$, although you can choose how noisy you want your data to be.
+
+```{r}
+# 
+set.seed(42)
+
+# number of data points
+N <- 100
+
+# simulate some x values
+x <- rnorm(N, mean = 5, sd = 2)
+
+# define the true intercept and slope
+beta0 <- 1.5
+beta1 <- 0.65
+
+# set the standard deviation of noise
+sigma <- 1
+
+# Simulate the corresponding mock y data given the model
+y <- beta0 + beta1 * x + rnorm(N, 0, sigma)
+```
+
+
+### Step 2
+
+Write the log-likelihood function that will take in the parameters for the intercept and slope, and the mock data. 
+
+```{r}
+# Log-likelihood function
+loglike <- function(intercept, slope, data) {
+  y_pred <- intercept + slope * x
+  sum(dnorm(y, mean = y_pred, sd = sigma, log = TRUE))
+}
+```
+
+
+### Step 3
+
+Decide on the length of the chain, the initial values of the parameters for the chain, and the width (standard deviation) of the proposal distribution. We will use a Gaussian proposal distribution. 
+
+```{r}
+# length of chain
+iterations <- 1000
+
+# make an empty matrix that will be filled as the Markov chain is made
+chain <- matrix(NA, nrow = iterations, ncol = 2)
+
+# Initial values
+chain[1, 1] <- 0
+chain[1, 2] <- 0
+
+# Proposal standard deviations for each parameter
+prop_sd_beta0 <- 0.2
+prop_sd_beta1 <- 0.2
+```
+
+
+### Step 4
+
+
+Write a basic Metroplis algorithm to sample from the posterior distribution (remember, we are assuming constant priors so you can leave those out since they are constants). For the step where you compute the acceptance ratio $r$, you need to calculate
+
+$$r = \frac{p(\beta_0^*, \beta_1^*|x)}{p(\beta_{0, i-1}, \beta_{1,i-1}|x)}$$
+I recommend doing this in log space, i.e.,
+
+$$\log{r} = \log{(p(\beta_0^*, \beta_1^*|x))} - \log{(p(\beta_{0, i-1}, \beta_{1,i-1}|x))}$$.
+
+
+Then, compare $\log{r}$ to $\log{(x)}$, where $x$ is a random number drawn from $U(0,1)$. This will be more computationally efficient.
+
+
+```{r}
+# write the Metroplis algorithm (a simple for-loop will do the trick, and should be very quick for this model)
+
+MetAlg = function(data, MarkovChain, propsd0, propsd1, n){
+  
+  for(i in 2:n){
+    # Propose new values for beta0 and beta1
+
+    # Compute acceptance ratio
+
+    # Accept/reject step
+  }
+}
+  
+
+
+postsamples <- MetAlg(data=x, MarkovChain=chain, propsd0=prop_sd_beta0, propsd1 = prop_sd_beta1, n=iterations)
+```
+
+
+### Step 5
+
+
+Make a trace plot of the chain to look at its behaviour.
+
+```{r}
+# Plot the results
+
+
+```
+
+
+Now try different proposal distribution widths and see how this affects the chain. 
+```{r}
+# larger sd
+
+# smaller sd
+
+# even smaller sd
+
+
+# good sd
+
+# once good sd found, run the chain for longer to get a good number of samples
+iterations = 1e4
+
+
+```
+
+
+Extra exercise: add to your Metropolis function a way to keep track of the _acceptance rate_ --- the percentage of the time that the suggested values $\beta_0^*,\beta_1^*$ are accepted. A good acceptance rate for a simple Metropolis algorithm with only a few parameters should be somewhere between 20-40\%.
+
+### Step 6
+
+Once you've settled on a good proposal distribution and the trace plots look good, then discard the burn-in and look at the marginal distribution for each parameter. Were you able to recover the true parameter values? 
+
+```{r}
+
+```
+
+
+Also look at the full posterior distribution --- notice that the intercept and slope are highly correlated! Using a joint proposal distribution for $\beta_0$ and $\beta_1$ with some covariance matrix would be more efficient.
+
+```{r}
+
+
+```
