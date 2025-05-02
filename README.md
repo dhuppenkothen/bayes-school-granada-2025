@@ -1,4 +1,4 @@
-# Bayesian Statistics School Granada 2025
+# SO-IAA School on Bayesian Statistics, Granada 2025
 
 This repo contains materials and notebooks for the Bayesian statistics school in Granada in May of 2025. 
 
