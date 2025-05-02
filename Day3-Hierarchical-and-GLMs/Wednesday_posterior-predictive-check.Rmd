@@ -1,0 +1,116 @@
+---
+title: "m&m's exercise: Posterior Predictive Checking"
+author: "Prof. Gwen Eadie"
+date: "05/07/2025"
+output: html_document
+---
+
+
+### Reminder of set-up for m\&m's exercise
+$$P(\theta|y) = \frac{P(y|\theta)P(\theta)}{P(y)}$$
+
+We defined:
+
+-  $\theta$ as the percentage of blue candies made at the factory
+-  $y$ as the number of blue candies observed in our data
+
+The likelihood for our model was the binomial distribution with parameter $\theta$:
+
+$$p(y|\theta) \propto \theta^{y}(1-\theta)^{n-y}.$$
+
+This is our likelihood for $y$ blue candies, given the percentage $\theta$ produced at the factory.
+
+We used the conjugate prior to the binomial distribution --- the beta distribution --- to quantify your prior information on the percentage $\theta$ of blue candies made at the factory:
+$$p(\theta) \propto \theta^{\alpha-1}(1-\theta)^{\beta-1}$$
+We chose some hyperparameter values
+```{r}
+# my hyperprior parameters for alpha and beta
+mya = 1.7
+myb = 10
+```
+
+Next, we collected our data, both individually, and as a class.
+```{r}
+# record your data before eating it!
+
+# total number of trials
+n = 10
+
+########### PLAIN ##################
+y = 1 # number of blue
+nred = 3
+norange = 5
+nyellow = 2
+ngreen = 3
+nbrown = 1
+
+# class data, number of successes from each bag
+mydata = c(3,3,4,5,6,2,2,8,1, 0, 2,4,1,5,2,5)
+
+# number of bags in the class
+nbags = length(mydata)
+```
+
+
+We calculated the posterior given your data and your prior distribution, and plotted it.
+```{r}
+# set margins
+par( mar = c(5,5,2,2))
+
+# plot the posterior distribution
+curve( dbeta( x, shape1 = (y + mya), shape2 = (n-y+myb)),
+      xlab = expression(theta), ylab = expression(p(theta)) , 
+      main = "Posterior distribution for the probability of drawing a blue candy", 
+      cex.lab=2, lwd=2)
+
+grid()
+
+
+# add the prior distribution to the plot, to compare
+curve(dbeta(x, shape1 = mya, shape2 = myb),
+      lwd=2, lty=3, add=TRUE, col="darkgrey")
+
+
+# add a legend
+legend("topright", legend = c("posterior",
+                              as.expression(bquote("prior, "~alpha == .(mya)~"and"~beta == .(myb))) ),
+   lty=c(1,3), lwd=2, col=c("black", "darkgrey"))
+```
+
+### Exercise
+
+Estimate the posterior predictive distribution and compare it to the distribution of successes (blue m&m's) from the class 
+
+To calculate the posterior predictive distribution, follow these steps:
+
+ *  draw a random value of $\theta$ from the posterior
+ *  draw a $y$ (number of blue m&m's) from the likelihood (binomial distribution) given that value of $\theta$
+ *  Repeat this many times.
+ 
+
+```{r}
+nsims=500
+yfuture = vector(length = nsims)
+
+# draw a random theta
+thetatemp <- rbeta( n = nsims, shape1 = (y + mya), shape2 = (n-y+myb)) 
+  
+# draw a random y (number of blues)
+yfuture <- rbinom(n = nsims, size = 15, prob=thetatemp) 
+```
+
+
+Next, compare the predicted distribution of successes (number of blues) to the distribution of successes for the whole class.
+
+```{r}
+# plot to compare
+hist(yfuture, probability = TRUE, breaks=seq(-0.5,15.5, by=1))
+hist(mydata, probability = TRUE, breaks=seq(-0.5,15.5, by=1), add=TRUE, col=rgb(0,0.3,0.6,0.6))
+legend("topright", legend = c("class data", "posterior predicitive"), col=c("grey", rgb(0,0.3,0.6,0.6)), lty=1, lwd=5)
+
+box()
+```
+
+
+
+
