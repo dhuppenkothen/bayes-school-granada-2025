@@ -23,7 +23,7 @@ For learning purposes, we won't use an out-of-the-box MCMC package to do the sam
 Simulate some mock data ($n=100$) that follows the line $$y = \beta_0 + \beta_1 x$$ and set the parameters to some true values of your choice. When simulating the data, make sure to include some Gaussian, random noise. I recommend setting $\sigma=1$, although you can choose how noisy you want your data to be.
 
 ```{r}
-# 
+# set seed
 set.seed(42)
 
 # number of data points
@@ -41,6 +41,9 @@ sigma <- 1
 
 # Simulate the corresponding mock y data given the model
 y <- beta0 + beta1 * x + rnorm(N, 0, sigma)
+
+# make data frame
+mydata = data.frame(x=x, y=y)
 ```
 
 
@@ -50,7 +53,7 @@ Write the log-likelihood function that will take in the parameters for the inter
 
 ```{r}
 # Log-likelihood function
-loglike <- function(intercept, slope, data) {
+loglike <- function(intercept, slope, x, y) {
   y_pred <- intercept + slope * x
   sum(dnorm(y, mean = y_pred, sd = sigma, log = TRUE))
 }
@@ -95,7 +98,7 @@ Then, compare $\log{r}$ to $\log{(x)}$, where $x$ is a random number drawn from 
 ```{r}
 # write the Metroplis algorithm (a simple for-loop will do the trick, and should be very quick for this model)
 
-MetAlg = function(data, MarkovChain, propsd0, propsd1, n){
+MetAlg = function(x,y, MarkovChain, propsd0, propsd1, n){
   
   for(i in 2:n){
     # Propose new values for beta0 and beta1
@@ -103,7 +106,7 @@ MetAlg = function(data, MarkovChain, propsd0, propsd1, n){
     beta1star  <- rnorm(1, mean = MarkovChain[i-1, 2], sd = propsd1)
   
     # Compute acceptance ratio
-    log_r <- loglike(beta0star, beta1star, data) - loglike(MarkovChain[i-1,1], MarkovChain[i-1, 2], data)
+    log_r <- loglike(beta0star, beta1star, x,y) - loglike(MarkovChain[i-1,1], MarkovChain[i-1, 2], x,y)
   
     # Accept/reject step
     if(log(runif(1)) < log_r){
@@ -117,7 +120,7 @@ MetAlg = function(data, MarkovChain, propsd0, propsd1, n){
   
 
 
-postsamples <- MetAlg(data=x, MarkovChain=chain, propsd0=prop_sd_beta0, propsd1 = prop_sd_beta1, n=iterations)
+postsamples <- MetAlg(x=x, y=y, MarkovChain=chain, propsd0=prop_sd_beta0, propsd1 = prop_sd_beta1, n=iterations)
 ```
 
 
@@ -141,7 +144,7 @@ Now try different proposal distribution widths and see how this affects the chai
 prop_sd_beta0 <- 0.6
 prop_sd_beta1 <- 0.6
 
-postsamples <- MetAlg(data=x, MarkovChain=chain, propsd0=prop_sd_beta0, propsd1 = prop_sd_beta1, n=iterations)
+postsamples <- MetAlg(x,y, MarkovChain=chain, propsd0=prop_sd_beta0, propsd1 = prop_sd_beta1, n=iterations)
 
 par(mfrow = c(2, 2))
 plot(postsamples[,1], type = "l", main = "Trace: beta0")
@@ -151,7 +154,7 @@ plot(postsamples[,2], type = "l", main = "Trace: beta1")
 prop_sd_beta0 <- 0.1
 prop_sd_beta1 <- 0.1
 
-postsamples <- MetAlg(data=x, MarkovChain=chain, propsd0=prop_sd_beta0, propsd1 = prop_sd_beta1, n=iterations)
+postsamples <- MetAlg(x,y, MarkovChain=chain, propsd0=prop_sd_beta0, propsd1 = prop_sd_beta1, n=iterations)
 
 par(mfrow = c(2, 2))
 plot(postsamples[,1], type = "l", main = "Trace: beta0")
@@ -161,7 +164,7 @@ plot(postsamples[,2], type = "l", main = "Trace: beta1")
 prop_sd_beta0 <- 0.006
 prop_sd_beta1 <- 0.006
 
-postsamples <- MetAlg(data=x, MarkovChain=chain, propsd0=prop_sd_beta0, propsd1 = prop_sd_beta1, n=iterations)
+postsamples <- MetAlg(x,y, MarkovChain=chain, propsd0=prop_sd_beta0, propsd1 = prop_sd_beta1, n=iterations)
 
 par(mfrow = c(2, 2))
 plot(postsamples[,1], type = "l", main = "Trace: beta0")
@@ -180,7 +183,7 @@ chain <- matrix(NA, nrow = iterations, ncol = 2)
 chain[1, 1] <- 0
 chain[1, 2] <- 0
 
-postsamples <- MetAlg(data=x, MarkovChain=chain, propsd0=prop_sd_beta0, propsd1 = prop_sd_beta1, n=iterations)
+postsamples <- MetAlg(x, y, MarkovChain=chain, propsd0=prop_sd_beta0, propsd1 = prop_sd_beta1, n=iterations)
 
 par(mfrow = c(2, 2))
 plot(postsamples[,1], type = "l", main = "Trace: beta0")
